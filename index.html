@@ -3,144 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pesa Track</title>
+    <title>Pesa Track - Expense Tracker</title>
     <style>
-        * {
-            box-sizing: border-box;
-        }
         body {
-            font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
             min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2e7d32, #4caf50);
         }
         .container {
-            max-width: 500px;
-            margin: auto;
             background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 450px;
         }
         h1 {
-            color: #2e7d32;
+            color: #1b5e20;
             text-align: center;
-            border-bottom: 3px solid #2e7d32;
-            padding-bottom: 10px;
+            font-size: 2rem;
             margin-top: 0;
         }
         form {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 12px;
         }
         input {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
+            padding: 12px;
+            border: 2px solid #c8e6c9;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+        input:focus {
+            border-color: #2e7d32;
         }
         button {
             background: #2e7d32;
             color: white;
             border: none;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1rem;
             cursor: pointer;
-            transition: 0.2s;
+            transition: background 0.2s;
         }
         button:hover {
             background: #1b5e20;
         }
-        .expense-item {
+        h2 {
+            color: #1b5e20;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            background: #f1f8e9;
+            margin: 8px 0;
+            padding: 12px;
+            border-radius: 8px;
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #e0e0e0;
+            align-items: center;
+            font-size: 1rem;
         }
-        .expense-name {
+        li .delete-btn {
+            background: #e53935;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        li .delete-btn:hover {
+            background: #c62828;
+        }
+        #totalAmount {
+            text-align: center;
+            font-size: 1.5rem;
             font-weight: bold;
-        }
-        .expense-amount {
-            color: #2e7d32;
-        }
-        #total {
-            margin-top: 20px;
-            font-size: 20px;
-            font-weight: bold;
-            color: #2e7d32;
-            text-align: right;
+            color: #1b5e20;
+            margin-top: 1rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Pesa Track</h1>
-        <form id="expense-form">
-            <input type="text" id="name" placeholder="Expense name" required>
-            <input type="number" id="amount" placeholder="Amount" min="0.01" step="0.01" required>
+        <h1>💰 Pesa Track</h1>
+        <form id="expenseForm">
+            <input type="text" id="expenseName" placeholder="Enter expense name" required>
+            <input type="number" id="expenseAmount" placeholder="Enter amount" step="0.01" min="0.01" required>
             <button type="submit">Add Expense</button>
         </form>
-        <div id="expense-list"></div>
-        <div id="total">Total: Ksh 0.00</div>
+        <h2>Expenses</h2>
+        <ul id="expenseList"></ul>
+        <div id="totalAmount">Total: KES 0.00</div>
     </div>
-
     <script>
         let expenses = [
-            { name: "Groceries", amount: 1500 },
-            { name: "Bus fare", amount: 120 },
-            { name: "Coffee", amount: 350 },
-            { name: "Internet", amount: 2500 }
+            { id: Date.now() + 1, name: 'Groceries', amount: 4500.00 },
+            { id: Date.now() + 2, name: 'Transport', amount: 1200.50 },
+            { id: Date.now() + 3, name: 'Internet', amount: 2999.00 }
         ];
+        const form = document.getElementById('expenseForm');
+        const nameInput = document.getElementById('expenseName');
+        const amountInput = document.getElementById('expenseAmount');
+        const list = document.getElementById('expenseList');
+        const totalDiv = document.getElementById('totalAmount');
 
-        function render() {
-            const list = document.getElementById('expense-list');
+        function renderExpenses() {
             list.innerHTML = '';
-
             let total = 0;
-            for (let expense of expenses) {
+            expenses.forEach(expense => {
                 total += expense.amount;
-
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'expense-item';
-
-                const nameSpan = document.createElement('span');
-                nameSpan.className = 'expense-name';
-                nameSpan.textContent = expense.name;
-
-                const amountSpan = document.createElement('span');
-                amountSpan.className = 'expense-amount';
-                amountSpan.textContent = `Ksh ${expense.amount.toFixed(2)}`;
-
-                itemDiv.appendChild(nameSpan);
-                itemDiv.appendChild(amountSpan);
-                list.appendChild(itemDiv);
-            }
-
-            document.getElementById('total').textContent = `Total: Ksh ${total.toFixed(2)}`;
+                const li = document.createElement('li');
+                li.innerHTML = `<span>${expense.name}: KES ${expense.amount.toFixed(2)}</span><button class="delete-btn" data-id="${expense.id}">Delete</button>`;
+                li.querySelector('.delete-btn').addEventListener('click', function() {
+                    deleteExpense(expense.id);
+                });
+                list.appendChild(li);
+            });
+            totalDiv.textContent = 'Total: KES ' + total.toFixed(2);
         }
 
-        document.getElementById('expense-form').addEventListener('submit', function(e) {
+        function deleteExpense(id) {
+            expenses = expenses.filter(expense => expense.id !== id);
+            renderExpenses();
+        }
+
+        form.addEventListener('submit', function(e) {
             e.preventDefault();
-
-            const nameInput = document.getElementById('name');
-            const amountInput = document.getElementById('amount');
-
             const name = nameInput.value.trim();
             const amount = parseFloat(amountInput.value);
-
-            if (name !== '' && amount > 0) {
-                expenses.push({ name: name, amount: amount });
-                render();
-                nameInput.value = '';
-                amountInput.value = '';
+            if (name === '' || isNaN(amount) || amount <= 0) {
+                return;
             }
+            expenses.push({ id: Date.now(), name: name, amount: amount });
+            renderExpenses();
+            nameInput.value = '';
+            amountInput.value = '';
         });
 
-        render();
+        renderExpenses();
     </script>
 </body>
 </html>
